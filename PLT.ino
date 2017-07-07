@@ -9,7 +9,7 @@ void setup()
 
   Serial.begin(9600);
   Serial.println("Ready");
-  BTSerial.begin(9600);  // HC-05 default speed in AT command more
+  BTSerial.begin(9600); 
   pinMode(powerPinSensor, OUTPUT);
   pinMode(powerPinBLE, OUTPUT);
 
@@ -20,6 +20,23 @@ String responseState = "N";
 char temp;
 void loop()
 {
+  //SENSOR PART
+  
+  //Activate Sensor
+  digitalWrite(powerPinSensor, HIGH);
+  delay(100);
+  //Get value
+  int sensorValue = analogRead(A0);
+  int sensorValuePercentage = map(sensorValue, 300, 1000, 100, 0);
+  //For log
+  Serial.println(sensorValue);
+  Serial.println(sensorValuePercentage);
+  //Disable sensor
+ digitalWrite(powerPinSensor, LOW);
+
+
+
+  //BLE PART
   digitalWrite(powerPinBLE, HIGH);
   
   //Wait for connexion
@@ -36,14 +53,14 @@ void loop()
         delay(5);
       }
     }
-    Serial.print("Wait..");
+    //Serial.print("Wait..");
   }
   //Connexion achieve
   Serial.print("Connected");
 
   
   //Send value
- BTSerial.print(44);
+ BTSerial.print(sensorValuePercentage);
 
   //Wait response for central
   while (responseState != "Y") { 
@@ -57,6 +74,10 @@ void loop()
         temp = (char)BTSerial.read();
         responseState = temp;
         Serial.print(responseState);
+        if (responseState == "V")
+        {
+           BTSerial.print(sensorValuePercentage);
+        }
         delay(5);
       }
 
